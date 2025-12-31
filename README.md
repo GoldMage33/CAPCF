@@ -26,6 +26,7 @@ This project implements a modular software system based on the Creative-Arts Pro
 ## Documentation
 
 - [SPECIFICATION.md](SPECIFICATION.md): Detailed mechanisms and formal specification for each layer.
+- [REQUIREMENTS.md](REQUIREMENTS.md): Formal requirements derived from the framework invariants.
 
 ## Building and Running
 
