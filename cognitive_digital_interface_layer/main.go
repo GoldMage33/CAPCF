@@ -5,6 +5,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -63,6 +64,12 @@ type CognitiveInterfaceService interface {
 	MonitorFeedback(feedback Feedback) error
 	ProtectLane(lane CognitiveLane) error
 	GetRepresentations(userID string) ([]Representation, error)
+	GetIntentions() ([]Intention, error)
+	GetIntention(id uuid.UUID) (*Intention, error)
+	GetRepresentation(id uuid.UUID) (*Representation, error)
+	GetTransformations() ([]Transformation, error)
+	GetFeedback() ([]Feedback, error)
+	GetLanes() ([]CognitiveLane, error)
 }
 
 // In-memory implementation for example.
@@ -128,6 +135,48 @@ func (s *InMemoryCognitiveService) GetRepresentations(userID string) ([]Represen
 		}
 	}
 	return reps, nil
+}
+
+func (s *InMemoryCognitiveService) GetIntentions() ([]Intention, error) {
+	var intentions []Intention
+	for _, i := range s.intentions {
+		intentions = append(intentions, i)
+	}
+	return intentions, nil
+}
+
+func (s *InMemoryCognitiveService) GetIntention(id uuid.UUID) (*Intention, error) {
+	if i, ok := s.intentions[id]; ok {
+		return &i, nil
+	}
+	return nil, fmt.Errorf("intention not found")
+}
+
+func (s *InMemoryCognitiveService) GetRepresentation(id uuid.UUID) (*Representation, error) {
+	if r, ok := s.representations[id]; ok {
+		return &r, nil
+	}
+	return nil, fmt.Errorf("representation not found")
+}
+
+func (s *InMemoryCognitiveService) GetTransformations() ([]Transformation, error) {
+	var transformations []Transformation
+	for _, t := range s.transformations {
+		transformations = append(transformations, t)
+	}
+	return transformations, nil
+}
+
+func (s *InMemoryCognitiveService) GetFeedback() ([]Feedback, error) {
+	return s.feedbacks, nil
+}
+
+func (s *InMemoryCognitiveService) GetLanes() ([]CognitiveLane, error) {
+	var lanes []CognitiveLane
+	for _, l := range s.lanes {
+		lanes = append(lanes, l)
+	}
+	return lanes, nil
 }
 
 func main() {
@@ -196,6 +245,72 @@ func main() {
 			return
 		}
 		c.JSON(http.StatusOK, reps)
+	})
+
+	r.GET("/representations/:id", func(c *gin.Context) {
+		idStr := c.Param("id")
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+			return
+		}
+		rep, err := service.GetRepresentation(id)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, rep)
+	})
+
+	r.GET("/intentions", func(c *gin.Context) {
+		intentions, err := service.GetIntentions()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, intentions)
+	})
+
+	r.GET("/intentions/:id", func(c *gin.Context) {
+		idStr := c.Param("id")
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+			return
+		}
+		intention, err := service.GetIntention(id)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, intention)
+	})
+
+	r.GET("/transformations", func(c *gin.Context) {
+		transformations, err := service.GetTransformations()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, transformations)
+	})
+
+	r.GET("/feedback", func(c *gin.Context) {
+		feedback, err := service.GetFeedback()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, feedback)
+	})
+
+	r.GET("/lanes", func(c *gin.Context) {
+		lanes, err := service.GetLanes()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, lanes)
 	})
 
 	r.Run(":8080")

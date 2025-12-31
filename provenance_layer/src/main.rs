@@ -2,7 +2,7 @@
 // This provides a REST API for logging events and registering artifacts.
 
 use axum::{
-    extract::Json,
+    extract::{Json, Path},
     routing::{get, post},
     Router,
 };
@@ -46,6 +46,58 @@ async fn main() {
                 let svc = service.as_ref();
                 match svc.get_events(None).await {
                     Ok(events) => (axum::http::StatusCode::OK, Json(events)),
+                    Err(_) => (axum::http::StatusCode::INTERNAL_SERVER_ERROR, Json(vec![])),
+                }
+            }
+        }))
+        .route("/events/:id", get({
+            let service = service.clone();
+            move |Path(id): Path<String>| async move {
+                let svc = service.as_ref();
+                match svc.get_events(Some(id)).await {
+                    Ok(events) => {
+                        if events.is_empty() {
+                            (axum::http::StatusCode::NOT_FOUND, Json(json!({"error": "event not found"})))
+                        } else {
+                            (axum::http::StatusCode::OK, Json(events[0].clone()))
+                        }
+                    },
+                    Err(_) => (axum::http::StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "failed to get event"}))),
+                }
+            }
+        }))
+        .route("/artifacts/:id", get({
+            let service = service.clone();
+            move |Path(id): Path<String>| async move {
+                let svc = service.as_ref();
+                match svc.get_artifacts(Some(id)).await {
+                    Ok(artifacts) => {
+                        if artifacts.is_empty() {
+                            (axum::http::StatusCode::NOT_FOUND, Json(json!({"error": "artifact not found"})))
+                        } else {
+                            (axum::http::StatusCode::OK, Json(artifacts[0].clone()))
+                        }
+                    },
+                    Err(_) => (axum::http::StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "failed to get artifact"}))),
+                }
+            }
+        }))
+        .route("/artifacts/:id/lineage", get({
+            let service = service.clone();
+            move |Path(id): Path<String>| async move {
+                let svc = service.as_ref();
+                match svc.get_lineage(id).await {
+                    Ok(lineage) => (axum::http::StatusCode::OK, Json(lineage)),
+                    Err(_) => (axum::http::StatusCode::NOT_FOUND, Json(json!({"error": "lineage not found"}))),
+                }
+            }
+        }))
+        .route("/blocks", get({
+            let service = service.clone();
+            move || async move {
+                let svc = service.as_ref();
+                match svc.get_blocks().await {
+                    Ok(blocks) => (axum::http::StatusCode::OK, Json(blocks)),
                     Err(_) => (axum::http::StatusCode::INTERNAL_SERVER_ERROR, Json(vec![])),
                 }
             }
