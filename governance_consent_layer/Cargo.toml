@@ -1,0 +1,16 @@
+[package]
+name = "governance_consent_layer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+ring = "0.16"
+sled = "0.34"
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+axum = "0.6"
+tower = "0.4"
+thiserror = "1.0"
+async-trait = "0.1"

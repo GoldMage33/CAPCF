@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "UserID": {
+      "type": "string"
+    },
+    "ArtifactID": {
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "common": {
+    "Event": {
+      "type": "object",
+      "properties": {
+        "id": { "$ref": "#/definitions/UUID" },
+        "timestamp": { "$ref": "#/definitions/Timestamp" },
+        "event_type": { "type": "string" },
+        "data": { "type": "object" }
+      },
+      "required": ["id", "timestamp", "event_type"]
+    },
+    "Artifact": {
+      "type": "object",
+      "properties": {
+        "id": { "$ref": "#/definitions/ArtifactID" },
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["id", "name"]
+    }
+  }
+}
