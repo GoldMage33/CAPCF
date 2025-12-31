@@ -23,6 +23,10 @@ This project implements a modular software system based on the Creative-Arts Pro
 - `cross_domain_integration_layer/`: Rust service for integration.
 - `shared/`: Common schemas and interfaces.
 
+## Documentation
+
+- [SPECIFICATION.md](SPECIFICATION.md): Detailed mechanisms and formal specification for each layer.
+
 ## Building and Running
 
 Each layer is a separate service. Refer to each layer's README for build instructions.
